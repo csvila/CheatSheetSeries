@@ -562,6 +562,27 @@
   
   
     <li class="md-nav__item">
+      <a href="Automotive_Security.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Automotive Security.md
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="Bean_Validation_Cheat_Sheet.html" class="md-nav__link">
         
   
@@ -693,6 +714,27 @@
   
   <span class="md-ellipsis">
     Content Security Policy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Cookie_Theft_Mitigation_Cheat_Sheet.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Cookie Theft Mitigation
   </span>
   
 
@@ -1433,11 +1475,11 @@
   
   
     <li class="md-nav__item">
-      <a href="Drone_security_sheet.html" class="md-nav__link">
+      <a href="Drone_Security_Cheat_Sheet.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Drone security sheet.md
+    Drone Security
   </span>
   
 
@@ -3322,7 +3364,7 @@
 <p>Since browser requests automatically include all cookies including session cookies, this attack works unless proper authorization is used, which means that the target site's challenge-response mechanism does not verify the identity and authority of the requester. In effect, CSRF attacks make a target system perform attacker-specified functions via the victim's browser without the victim's knowledge (normally until after the unauthorized actions have been committed).</p>
 <p>However, successful CSRF attacks can only exploit the capabilities exposed by the vulnerable application and the user's privileges. Depending on the user's credentials, the attacker can transfer funds, change a password, make an unauthorized purchase, elevate privileges for a target account, or take any action that the user is permitted to do.</p>
 <p>In short, the following principles should be followed to defend against CSRF:</p>
-<p><strong>IMPORTANT: Remember that Cross-Site Scripting (XSS) can defeat all CSRF mitigation techniques!</strong></p>
+<p><strong>IMPORTANT: Remember that Cross-Site Scripting (XSS) can defeat all CSRF mitigation techniques!</strong> While Cross-Site Scripting (XSS) vulnerabilities can bypass CSRF protections, CSRF tokens are still essential for web applications that rely on cookies for authentication. Consider the client and authentication method to determine the best approach for CSRF protection in your application.</p>
 <ul>
 <li><strong>See the OWASP <a href="Cross_Site_Scripting_Prevention_Cheat_Sheet.html">XSS Prevention Cheat Sheet</a> for detailed guidance on how to prevent XSS flaws.</strong></li>
 <li><strong>First, check if your framework has <a href="#use-built-in-or-existing-csrf-implementations-for-csrf-protection">built-in CSRF protection</a> and use it</strong></li>
@@ -3382,18 +3424,50 @@
 <h5 id="pseudo-code-for-implementing-hmac-csrf-tokens">Pseudo-Code For Implementing HMAC CSRF Tokens<a class="headerlink" href="#pseudo-code-for-implementing-hmac-csrf-tokens" title="Permanent link">&para;</a></h5>
 <p>Below is an example in pseudo-code that demonstrates the implementation steps described above:</p>
 <div class="highlight"><pre><span></span><code>// Gather the values
-secret = readEnvironmentVariable(&quot;CSRF_SECRET&quot;) // HMAC secret key
+secret = getSecretSecurely(&quot;CSRF_SECRET&quot;) // HMAC secret key
 sessionID = session.sessionID // Current authenticated user session
-randomValue = cryptographic.randomValue() // Cryptographic random value
+randomValue = cryptographic.randomValue(64) // Cryptographic random value
 
 // Create the CSRF Token
-message = sessionID.length + &quot;!&quot; + sessionID + &quot;!&quot; + randomValue.length + &quot;!&quot; + randomValue // HMAC message payload
+message = sessionID.length + &quot;!&quot; + sessionID + &quot;!&quot; + randomValue.length + &quot;!&quot; + randomValue.toHex() // HMAC message payload
 hmac = hmac(&quot;SHA256&quot;, secret, message) // Generate the HMAC hash
-csrfToken = hmac + &quot;.&quot; + randomValue // Add the `randomValue` to the HMAC hash to create the final CSRF token. Avoid using the `message` because it contains the sessionID in plain text, which the server already stores separately.
+// Add the `randomValue` to the HMAC hash to create the final CSRF token.
+// Avoid using the `message` because it contains the sessionID in plain text,
+// which the server already stores separately.
+csrfToken = hmac.toHex() + &quot;.&quot; + randomValue.toHex()
 
 // Store the CSRF Token in a cookie
 response.setCookie(&quot;csrf_token=&quot; + csrfToken + &quot;; Secure&quot;) // Set Cookie without HttpOnly flag
 </code></pre></div>
+<p>Below is an example in pseudo-code that demonstrates validation of the CSRF token once it is sent back from the client:</p>
+<div class="highlight"><pre><span></span><code>// Get the CSRF token from the request
+csrfToken = request.getParameter(&quot;csrf_token&quot;) // From form field, cookie, or header
+
+// Split the token to get the randomValue
+const tokenParts = csrfToken.split(&quot;.&quot;);
+const hmacFromRequest = tokenParts[0];
+const randomValue = tokenParts[1];
+
+// Recreate the HMAC with the current session and the randomValue from the request
+secret = getSecretSecurely(&quot;CSRF_SECRET&quot;) // HMAC secret key
+sessionID = session.sessionID // Current authenticated user session
+message = sessionID.length + &quot;!&quot; + sessionID + &quot;!&quot; + randomValue.length + &quot;!&quot; + randomValue
+
+// Generate the expected HMAC
+expectedHmac = hmac(&quot;SHA256&quot;, secret, message)
+
+// Compare the HMAC from the request with the expected HMAC
+if (!constantTimeEquals(hmacFromRequest, expectedHmac)) {
+    // HMAC validation failed, reject the request
+    response.sendError(403, &quot;Invalid CSRF token&quot;)
+    logError(&quot;Invalid CSRF token&quot;, hmacFromRequest, expectedHmac)
+    return
+}
+
+// CSRF validation passed, continue processing the request
+// ...
+</code></pre></div>
+<p>Note: The <code>constantTimeEquals</code> function should be used to compare the HMACs to prevent timing attacks. This function compares two strings in constant time, regardless of how many characters match.</p>
 <h3 id="naive-double-submit-cookie-pattern-discouraged">Naive Double-Submit Cookie Pattern (DISCOURAGED)<a class="headerlink" href="#naive-double-submit-cookie-pattern-discouraged" title="Permanent link">&para;</a></h3>
 <p>The <em>Naive Double-Submit Cookie</em> method is a scalable and easy-to-implement technique which uses a cryptographically strong random value as a cookie and as a request parameter (even before user authentication). Then the server verifies if the cookie value and request value match. The site must require that every transaction request from the user includes this random value as a hidden form value or inside the request header. If the value matches at server side, the server accepts it as a legitimate request and if they don't, it rejects the request.</p>
 <p>Since an attacker is unable to access the cookie value during a cross-site request, they cannot include a matching value in the hidden form value or as a request parameter/header.</p>

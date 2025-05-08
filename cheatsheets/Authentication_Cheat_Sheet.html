@@ -1013,6 +1013,27 @@
   
   
     <li class="md-nav__item">
+      <a href="Automotive_Security.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Automotive Security.md
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="Bean_Validation_Cheat_Sheet.html" class="md-nav__link">
         
   
@@ -1144,6 +1165,27 @@
   
   <span class="md-ellipsis">
     Content Security Policy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Cookie_Theft_Mitigation_Cheat_Sheet.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Cookie Theft Mitigation
   </span>
   
 
@@ -1433,11 +1475,11 @@
   
   
     <li class="md-nav__item">
-      <a href="Drone_security_sheet.html" class="md-nav__link">
+      <a href="Drone_Security_Cheat_Sheet.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Drone security sheet.md
+    Drone Security
   </span>
   
 
@@ -3344,9 +3386,19 @@
 <li>Do not silently truncate passwords. The <a href="Password_Storage_Cheat_Sheet.html#maximum-password-lengths">Password Storage Cheat Sheet</a> provides further guidance on how to handle passwords that are longer than the maximum length.</li>
 <li>Allow usage of <strong>all</strong> characters including unicode and whitespace. There should be no password composition rules limiting the type of characters permitted. There should be no requirement for upper or lower case or numbers or special characters.</li>
 <li>Ensure credential rotation when a password leak occurs, at the time of compromise identification or when authenticator technology changes. Avoid requiring periodic password changes; instead, encourage users to pick strong passwords and enable <a href="Multifactor_Authentication_Cheat_Sheet.html">Multifactor Authentication Cheat Sheet (MFA)</a>. According to NIST guidelines, verifiers should not mandate arbitrary password changes (e.g., periodically).</li>
-<li>Include a password strength meter to help users create a more complex password and block common and previously breached passwords<ul>
+<li>Include a password strength meter to help users create a more complex password<ul>
 <li><a href="https://github.com/zxcvbn-ts/zxcvbn">zxcvbn-ts library</a> can be used for this purpose.</li>
-<li><a href="https://haveibeenpwned.com/Passwords">Pwned Passwords</a> is a service where passwords can be checked against previously breached passwords. You can host it yourself or use the <a href="https://haveibeenpwned.com/API/v3#PwnedPasswords">API</a>.</li>
+<li>Other language implementations of zxcvbn <a href="https://github.com/dropbox/zxcvbn?tab=readme-ov-file">listed here</a> but check the age and maturity of each example before use.</li>
+</ul>
+</li>
+<li>Block common and previously breached passwords<ul>
+<li><a href="https://haveibeenpwned.com/Passwords">Pwned Passwords</a> is a service where passwords can be checked against previously breached passwords. Details on the API <a href="https://haveibeenpwned.com/API/v3#PwnedPasswords">are here</a>.</li>
+<li>Alternatively, you can download the <a href="https://haveibeenpwned.com/Passwords">Pwned Passwords</a> database <a href="https://github.com/HaveIBeenPwned/PwnedPasswordsDownloader?tab=readme-ov-file#what-is-haveibeenpwned-downloader">using this mechanism</a> to host it yourself.</li>
+<li>Other top password lists are available but there is no guarantee as to how updated they are:<ul>
+<li><a href="https://github.com/danielmiessler/SecLists/tree/master/Passwords">Various password lists</a> hosted by SecLists from Daniel Miessler.</li>
+<li>Static copy of the top 100,000 passwords from "Have I Been Pwned" hosted by NCSC in <a href="https://www.ncsc.gov.uk/static-assets/documents/PwnedPasswordsTop100k.txt">text</a> and <a href="https://www.ncsc.gov.uk/static-assets/documents/PwnedPasswordsTop100k.json">json</a> format.</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -3363,7 +3415,7 @@
 <p>Where possible, the user-supplied password should be compared to the stored password hash using a secure password comparison function provided by the language or framework, such as the <a href="https://www.php.net/manual/en/function.password-verify.php">password_verify()</a> function in PHP. Where this is not possible, ensure that the comparison function:</p>
 <ul>
 <li>Has a maximum input length, to protect against denial of service attacks with very long inputs.</li>
-<li>Explicitly sets the type of both variables, to protect against type confusion attacks such as <a href="https://www.whitehatsec.com/blog/magic-hashes/">Magic Hashes</a> in PHP.</li>
+<li>Explicitly sets the type of both variables, to protect against type confusion attacks such as Magic Hashes in PHP.</li>
 <li>Returns in constant time, to protect against timing attacks.</li>
 </ul>
 <h3 id="change-password-feature">Change Password Feature<a class="headerlink" href="#change-password-feature" title="Permanent link">&para;</a></h3>
@@ -3512,7 +3564,7 @@ ENDIF
 <ul>
 <li>Amount of time to delay after each account lockout (max 2-3, after that permanent account lockout).</li>
 </ul>
-<p>When designing an account lockout system, care must be taken to prevent it from being used to cause a denial of service by locking out other users' accounts. One way this could be performed is to allow the user of the forgotten password functionality to log in, even if the account is locked out.</p>
+<p>When designing an account lockout system, care must be taken to prevent it from being used to cause a denial of service by locking out other users' accounts. One way this could be performed is to allow the use of the forgotten password functionality to log in, even if the account is locked out.</p>
 <h4 id="captcha">CAPTCHA<a class="headerlink" href="#captcha" title="Permanent link">&para;</a></h4>
 <p>The use of an effective CAPTCHA can help to prevent automated login attempts against accounts. However, many CAPTCHA implementations have weaknesses that allow them to be solved using automated techniques or can be outsourced to services that can solve them. As such, the use of CAPTCHA should be viewed as a defense-in-depth control to make brute-force attacks more time-consuming and expensive, rather than as a preventative.</p>
 <p>It may be more user-friendly to only require a CAPTCHA be solved after a small number of failed login attempts, rather than requiring it from the very first login.</p>
